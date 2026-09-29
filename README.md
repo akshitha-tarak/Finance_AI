@@ -246,8 +246,8 @@ This method hosts both the backend and frontend together on a single Render Web 
      | **Branch** | `main` |
      | **Root Directory** | *(leave blank)* |
      | **Runtime** | `Python 3` |
-     | **Build Command** | `pip install -r backend/requirements.txt` |
-     | **Start Command** | `uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend` |
+     | **Build Command** | `pip install -r requirements.txt` |
+     | **Start Command** | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
      | **Instance Type** | `Free` |
 
 3. **Add Environment Variables**:
