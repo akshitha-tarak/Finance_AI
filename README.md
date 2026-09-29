@@ -197,56 +197,103 @@ Open `http://localhost:3000` in your browser.
 
 ---
 
-## 🌐 Deployment Walkthrough
+## 🌐 Deploying Only on Render (100% Free)
 
-### Part 1: Deploy Backend to Render (Free)
+You can deploy the **entire project exclusively on Render** without needing Vercel or any third-party frontend hosts.
 
-1. **Push your code to GitHub**:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit of AI Financial Insights Assistant"
-   git remote add origin https://github.com/your-username/ai-financial-assistant.git
-   git push -u origin main
-   ```
-
-2. **Create a Web Service on Render**:
-   - Go to [render.com](https://render.com) and sign in.
-   - Click **"New +"** &rarr; **"Web Service"**.
-   - Connect your GitHub repository.
-   - Fill in the service configuration:
-     - **Name**: `ai-financial-backend`
-     - **Region**: Closest to you (e.g., Oregon or Frankfurt)
-     - **Root Directory**: `backend`
-     - **Runtime**: `Python 3`
-     - **Build Command**: `pip install -r requirements.txt`
-     - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-     - **Plan**: `Free`
-   - Under **Environment Variables**, add:
-     - `GROQ_API_KEY`: *(your free Groq key, optional)*
-   - Click **"Create Web Service"**.
-   - Render will build and deploy your API at: `https://ai-financial-backend.onrender.com`.
+Choose between two simple options:
+- **Method 1 (Recommended)**: **Single Unified Web Service** &mdash; Serves both the FastAPI backend (ML, RAG, Analytics) and the React frontend on **one single Render URL**. Zero CORS issues, no separate hosting, and 100% free-tier friendly!
+- **Method 2**: **Two Separate Services on Render** &mdash; A Python Web Service for the backend and a Static Site for the frontend.
 
 ---
 
-### Part 2: Deploy Frontend to Vercel (Free)
+### 🚀 Method 1: Single Unified Web Service (Recommended & Easiest)
 
-1. **Sign in to Vercel**:
-   - Go to [vercel.com](https://vercel.com) and log in with GitHub.
-2. **Import Project**:
-   - Click **"Add New..."** &rarr; **"Project"**.
-   - Select your GitHub repository.
-3. **Configure Project Settings**:
-   - **Framework Preset**: `Vite`
+This method hosts both the backend and frontend together on a single Render Web Service (`https://your-app.onrender.com`).
+
+#### Option A: 1-Click Render Blueprint (Automated)
+
+1. Push your repository to GitHub:
+   ```bash
+   git add .
+   git commit -m "Configure Render deployment"
+   git push origin main
+   ```
+2. Go to [render.com](https://render.com) and log in.
+3. Click **"New +"** &rarr; **"Blueprint"**.
+4. Connect your GitHub repository.
+5. Render automatically detects [`render.yaml`](render.yaml).
+6. (Optional) Provide your `GROQ_API_KEY` under environment variables.
+7. Click **"Apply"**. Render will build and deploy your unified web application!
+
+#### Option B: Manual Web Service Creation via Dashboard
+
+1. **Push your code to GitHub**:
+   ```bash
+   git add .
+   git commit -m "Deploy to Render"
+   git push origin main
+   ```
+
+2. **Create Web Service on Render**:
+   - Go to [render.com](https://render.com) and click **"New +"** &rarr; **"Web Service"**.
+   - Connect your GitHub repository.
+   - Configure the service settings:
+     | Setting | Value |
+     |---|---|
+     | **Name** | `ai-financial-assistant` *(or any name)* |
+     | **Region** | Oregon (US West) or Frankfurt (EU) |
+     | **Branch** | `main` |
+     | **Root Directory** | *(leave blank)* |
+     | **Runtime** | `Python 3` |
+     | **Build Command** | `pip install -r backend/requirements.txt` |
+     | **Start Command** | `uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend` |
+     | **Instance Type** | `Free` |
+
+3. **Add Environment Variables**:
+   Under the **Environment Variables** section, add:
+   - `PYTHON_VERSION`: `3.11.9`
+   - `GROQ_API_KEY`: *(optional - your free Groq key from [console.groq.com](https://console.groq.com/keys))*
+   - `GEMINI_API_KEY`: *(optional - your free Gemini key from Google AI Studio)*
+
+4. **Deploy**:
+   - Click **"Create Web Service"**.
+   - Render installs dependencies and launches the full application.
+   - Access your live app at: `https://ai-financial-assistant.onrender.com`!
+
+---
+
+### 📦 Method 2: Two Separate Services on Render (Backend + Static Site)
+
+If you prefer separating frontend and backend into two individual services on Render:
+
+#### Step 1: Deploy Backend (Render Web Service)
+1. In Render, click **"New +"** &rarr; **"Web Service"**.
+2. Connect your repo.
+3. Set:
+   - **Root Directory**: `backend`
+   - **Runtime**: `Python 3`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - **Instance Type**: `Free`
+4. Copy your backend URL once live (e.g., `https://ai-finance-backend.onrender.com`).
+
+#### Step 2: Deploy Frontend (Render Static Site)
+1. In Render, click **"New +"** &rarr; **"Static Site"**.
+2. Connect your repo.
+3. Set:
    - **Root Directory**: `frontend`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-4. **Add Environment Variable**:
-   - Key: `VITE_API_URL`
-   - Value: `https://ai-financial-backend.onrender.com` *(your Render backend URL from Part 1)*
-5. **Deploy**:
-   - Click **"Deploy"**.
-   - Within 60 seconds, your frontend will be live on a custom `.vercel.app` URL!
+   - **Build Command**: *(leave empty)*
+   - **Publish Directory**: `.`
+4. Click **"Create Static Site"**.
+5. Once deployed, open `https://your-frontend.onrender.com`.
+
+---
+
+### 💡 Render Free Tier Tips & Best Practices
+- **Spin-down / Cold Starts**: Render's free tier spins down services after 15 minutes of inactivity. When you open the website after inactivity, the first load takes ~30–50 seconds to boot up. Subsequent interactions are fast.
+- **Health Check Path**: You can set Render's Health Check Path to `/health` in **Settings** &rarr; **Health Check Path**.
+- **Interactive API Docs**: View the live FastAPI Swagger documentation anytime at `https://your-render-url.onrender.com/docs`.
 
 ---
 

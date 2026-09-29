@@ -1,8 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from typing import Dict, Any
 
-from .config import settings
+from .config import settings, BASE_DIR
 from .models.schemas import ChatRequest, ChatResponse, AnalysisResponse
 from .services.data_loader import data_loader
 from .services.router import router
@@ -17,17 +19,44 @@ app = FastAPI(
     description="Intelligent financial analytics with scikit-learn ML and LangChain RAG architecture."
 )
 
-# Enable CORS for React frontend (Localhost & Vercel deployments)
+# Enable CORS for React frontend (Localhost & Render deployments)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins for local dev and Vercel hosting
+    allow_origins=["*"],  # Allows all origins for local dev and hosting
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/")
+# Detect frontend directory to support unified fullstack deployment on Render
+frontend_dir = BASE_DIR.parent / "frontend"
+if not frontend_dir.exists():
+    frontend_dir = BASE_DIR / "frontend"
+
+if frontend_dir.exists():
+    src_dir = frontend_dir / "src"
+    if src_dir.exists():
+        app.mount("/src", StaticFiles(directory=str(src_dir)), name="frontend_src")
+
+@app.get("/", include_in_schema=False)
 def root():
+    index_file = frontend_dir / "index.html"
+    if frontend_dir.exists() and index_file.exists():
+        return FileResponse(str(index_file))
+    return {
+        "status": "healthy",
+        "service": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "endpoints": {
+            "chat": "/chat (POST)",
+            "analyze": "/analyze (GET)",
+            "charts": "/charts (GET)",
+            "docs": "/docs (Swagger UI)"
+        }
+    }
+
+@app.get("/api")
+def api_root():
     return {
         "status": "healthy",
         "service": settings.PROJECT_NAME,

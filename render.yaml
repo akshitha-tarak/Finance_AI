@@ -1,0 +1,18 @@
+services:
+  # Unified Fullstack Deployment on Render
+  # Runs the FastAPI backend (ML, RAG, Analytics) and serves the React frontend
+  - type: web
+    name: ai-financial-insights
+    runtime: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

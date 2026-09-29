@@ -4,8 +4,12 @@ import InsightsDashboard from './components/InsightsDashboard';
 import ChartsModal from './components/ChartsModal';
 import './index.css';
 
-// Default backend API URL: uses Vite env var in production or localhost:8000 in dev
-const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8000';
+// Backend API URL: uses Vite env var in production or relative URL / localhost:8000 in dev
+const API_URL = import.meta.env?.VITE_API_URL || (
+  typeof window !== 'undefined' && (window.location.protocol === 'file:' || window.location.port === '3000' || window.location.port === '5173')
+    ? 'http://localhost:8000'
+    : ''
+);
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('chat');
@@ -48,7 +52,7 @@ export default function App() {
             <span className="status-dot" style={{
               backgroundColor: serverOnline ? '#10b981' : '#f43f5e'
             }}></span>
-            <span>{serverOnline ? 'Backend Online (Port 8000)' : 'Backend Disconnected'}</span>
+            <span>{serverOnline ? 'Backend Online' : 'Backend Disconnected'}</span>
           </div>
 
           <button 

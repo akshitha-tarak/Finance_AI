@@ -20,8 +20,17 @@
 
   <!-- Standalone In-Browser React Application (Works directly in browser without Vite/Node) -->
   <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
-    const API_URL = "http://localhost:8000";
+    // Dynamic API URL: Automatically works on Render (same origin),
+    // local file preview, Vite dev, or custom backend URL
+    const API_URL = (() => {
+      if (typeof window === 'undefined') return 'http://localhost:8000';
+      if (window.BACKEND_API_URL) return window.BACKEND_API_URL;
+      const port = window.location.port;
+      if (window.location.protocol === 'file:' || port === '3000' || port === '5173') {
+        return 'http://localhost:8000';
+      }
+      return '';
+    })();
 
     const SUGGESTIONS = [
       "What is the 50/30/20 budgeting rule?",
@@ -419,7 +428,7 @@
                 color: serverOnline ? '#34d399' : '#fb7185'
               }}>
                 <span className="status-dot" style={{ backgroundColor: serverOnline ? '#10b981' : '#f43f5e' }}></span>
-                <span>{serverOnline ? 'Backend Online (Port 8000)' : 'Backend Disconnected'}</span>
+                <span>{serverOnline ? 'Backend Online' : 'Backend Disconnected'}</span>
               </div>
               <button className="send-btn" style={{ padding: '8px 16px', fontSize: '0.85rem' }} onClick={() => setIsChartsOpen(true)}>
                 📊 Matplotlib Charts
