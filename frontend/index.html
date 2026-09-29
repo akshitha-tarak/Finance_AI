@@ -20,6 +20,8 @@
 
   <!-- Standalone In-Browser React Application (Works directly in browser without Vite/Node) -->
   <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
     // Dynamic API URL: Automatically works on Render (same origin),
     // local file preview, Vite dev, or custom backend URL
     const API_URL = (() => {
