@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-Powered Financial Insights Assistant</title>
+  <meta name="description" content="Intelligent financial analytics with scikit-learn Machine Learning and LangChain RAG architecture." />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- React 18 & Babel for instant preview without node installation -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="stylesheet" href="./src/index.css" />
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Standalone In-Browser React Application (Works directly in browser without Vite/Node) -->
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+    const API_URL = "http://localhost:8000";
+
+    const SUGGESTIONS = [
+      "What is the 50/30/20 budgeting rule?",
+      "How much did I spend on dining out?",
+      "Am I overspending?",
+      "Show my spending clusters and personas",
+      "How do index funds and compound interest work?",
+      "Explain debt snowball vs avalanche"
+    ];
+
+    function ChatInterface({ apiUrl, onOpenCharts }) {
+      const [messages, setMessages] = useState([
+        {
+          id: 1,
+          sender: 'assistant',
+          text: "👋 Hello! I am your **AI-Powered Financial Insights Assistant**.\n\nI can analyze your personal transaction patterns using **Machine Learning (KMeans & anomaly detection)** or answer finance questions using **RAG (Retrieval-Augmented Generation)**.\n\nTry clicking one of the suggested prompts below or ask any question!",
+          source: 'system'
+        }
+      ]);
+      const [input, setInput] = useState('');
+      const [loading, setLoading] = useState(false);
+      const messagesEndRef = useRef(null);
+
+      const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      };
+
+      useEffect(() => {
+        scrollToBottom();
+      }, [messages, loading]);
+
+      const handleSend = async (queryText = input) => {
+        const textToSend = (typeof queryText === 'string' ? queryText : input).trim();
+        if (!textToSend || loading) return;
+
+        const userMsg = { id: Date.now(), sender: 'user', text: textToSend };
+        setMessages((prev) => [...prev, userMsg]);
+        setInput('');
+        setLoading(true);
+
+        try {
+          const response = await fetch(`${apiUrl}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: textToSend })
+          });
+
+          if (!response.ok) throw new Error(`Server returned ${response.status}`);
+          const data = await response.json();
+          const botMsg = {
+            id: Date.now() + 1,
+            sender: 'assistant',
+            text: data.reply,
+            source: data.source
+          };
+          setMessages((prev) => [...prev, botMsg]);
+        } catch (err) {
+          const errorMsg = {
+            id: Date.now() + 1,
+            sender: 'assistant',
+            text: `⚠️ **Connection Error:** Could not reach backend at \`${apiUrl}\`. Ensure your FastAPI server is running with \`python run.py\`!`,
+            source: 'error'
+          };
+          setMessages((prev) => [...prev, errorMsg]);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleSend();
+        }
+      };
+
+      const formatMarkdown = (text) => {
+        const lines = text.split('\n');
+        return lines.map((line, idx) => {
+          if (line.startsWith('### ')) {
+            return <h3 key={idx} style={{ fontSize: '1.05rem', fontWeight: 700, margin: '8px 0 4px 0', color: '#38bdf8' }}>{line.replace('### ', '')}</h3>;
+          }
+          if (line.startsWith('#### ')) {
+            return <h4 key={idx} style={{ fontSize: '0.95rem', fontWeight: 600, margin: '6px 0 2px 0', color: '#e2e8f0' }}>{line.replace('#### ', '')}</h4>;
+          }
+          if (line.startsWith('## ')) {
+            return <h2 key={idx} style={{ fontSize: '1.15rem', fontWeight: 700, margin: '10px 0 6px 0', color: '#60a5fa' }}>{line.replace('## ', '')}</h2>;
+          }
+          if (line.startsWith('> ')) {
+            return <blockquote key={idx} style={{ borderLeft: '3px solid #38bdf8', paddingLeft: '8px', margin: '6px 0', color: '#94a3b8', fontStyle: 'italic' }}>{line.replace('> ', '')}</blockquote>;
+          }
+          if (line.startsWith('- ')) {
+            return (
+              <div key={idx} style={{ display: 'flex', gap: '6px', margin: '3px 0' }}>
+                <span style={{ color: '#38bdf8' }}>•</span>
+                <span>{renderFormattedText(line.replace('- ', ''))}</span>
+              </div>
+            );
+          }
+          return <p key={idx} style={{ minHeight: line.trim() ? 'auto' : '8px', margin: '2px 0' }}>{renderFormattedText(line)}</p>;
+        });
+      };
+
+      const renderFormattedText = (str) => {
+        const parts = str.split(/(\*\*.*?\*\*|`.*?`)/g);
+        return parts.map((part, i) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={i} style={{ color: '#fff', fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
+          }
+          if (part.startsWith('`') && part.endsWith('`')) {
+            return <code key={i} style={{ background: '#0f172a', padding: '2px 6px', borderRadius: '4px', fontSize: '0.85em', color: '#38bdf8' }}>{part.slice(1, -1)}</code>;
+          }
+          return part;
+        });
+      };
+
+      return (
+        <div className="chat-card">
+          <div className="chat-header">
+            <div className="chat-header-title">
+              <span>💬</span>
+              <span>Assistant Conversation</span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button className="clear-btn" onClick={onOpenCharts} style={{ color: '#38bdf8', borderColor: 'rgba(56, 189, 248, 0.4)' }}>
+                📊 View Charts
+              </button>
+              <button className="clear-btn" onClick={() => setMessages([{ id: Date.now(), sender: 'assistant', text: "Conversation cleared.", source: 'system' }])}>
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <div className="chat-messages custom-scroll">
+            {messages.map((msg) => (
+              <div key={msg.id} className={`message-wrapper ${msg.sender}`}>
+                <div className="message-bubble">{formatMarkdown(msg.text)}</div>
+                <div className="message-meta">
+                  {msg.source && msg.source !== 'system' && (
+                    <span className={`source-tag ${msg.source}`}>
+                      {msg.source === 'ml' ? '🤖 ML Analytics' : msg.source === 'rag' ? '📚 Financial RAG' : msg.source}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div className="message-wrapper assistant">
+                <div className="message-bubble" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="status-dot" style={{ background: '#38bdf8' }}></span>
+                  <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Analyzing query with ML & RAG...</span>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="suggestions-box custom-scroll">
+            {SUGGESTIONS.map((sug, i) => (
+              <button key={i} className="suggestion-pill" onClick={() => handleSend(sug)}>
+                {sug}
+              </button>
+            ))}
+          </div>
+
+          <div className="chat-input-bar">
+            <input
+              type="text"
+              className="chat-input"
+              placeholder="Ask about your spending or personal finance concepts..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={loading}
+            />
+            <button className="send-btn" onClick={() => handleSend()} disabled={loading || !input.trim()}>
+              <span>Send</span>
+              <span>→</span>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    function InsightsDashboard({ apiUrl, onOpenCharts }) {
+      const [data, setData] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+
+      const fetchAnalysis = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const res = await fetch(`${apiUrl}/analyze`);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const json = await res.json();
+          setData(json);
+        } catch (err) {
+          setError("Could not connect to FastAPI server at " + apiUrl);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      useEffect(() => {
+        fetchAnalysis();
+      }, [apiUrl]);
+
+      if (loading) {
+        return (
+          <div className="panel-card" style={{ alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '300px' }}>
+            <span className="status-dot" style={{ width: '12px', height: '12px', background: '#38bdf8' }}></span>
+            <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '12px' }}>Computing ML clusters and analytics...</p>
+          </div>
+        );
+      }
+
+      if (error || !data) {
+        return (
+          <div className="panel-card">
+            <p style={{ color: '#f43f5e', fontSize: '0.9rem' }}>⚠️ {error}</p>
+            <button className="clear-btn" onClick={fetchAnalysis} style={{ alignSelf: 'flex-start', marginTop: '10px' }}>
+              Retry
+            </button>
+          </div>
+        );
+      }
+
+      return (
+        <div className="panel-card custom-scroll" style={{ maxHeight: '680px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>📊</span>
+              <span>Financial Insights & ML</span>
+            </h3>
+            <button className="clear-btn" onClick={fetchAnalysis} title="Refresh ML calculations">
+              ↻ Refresh
+            </button>
+          </div>
+
+          <div className="stats-grid">
+            <div className="stat-item">
+              <div className="stat-label">Total Spend</div>
+              <div className="stat-value">${data.total_spend.toLocaleString()}</div>
+              <div className="stat-desc">{data.total_transactions} Transactions</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-label">Top Outflow</div>
+              <div className="stat-value" style={{ fontSize: '1.2rem', color: '#38bdf8' }}>{data.top_spending_category}</div>
+              <div className="stat-desc">${data.top_spending_amount.toLocaleString()} spent</div>
+            </div>
+          </div>
+
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#94a3b8', fontWeight: 700 }}>
+                🧠 KMeans Spending Personas
+              </h4>
+              <button onClick={onOpenCharts} style={{ background: 'none', border: 'none', color: '#38bdf8', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}>
+                View Chart →
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {data.clusters.map((cluster) => (
+                <div key={cluster.cluster_id} className="cluster-card">
+                  <div className="cluster-name">
+                    <span>{cluster.name}</span>
+                    <span style={{ color: '#38bdf8' }}>${cluster.total_amount.toLocaleString()}</span>
+                  </div>
+                  <div className="cluster-progress-bar">
+                    <div className="cluster-progress-fill" style={{ width: `${Math.min(cluster.percentage_of_total, 100)}%` }} />
+                  </div>
+                  <div className="cluster-meta">
+                    {cluster.percentage_of_total}% of budget • Avg ${cluster.avg_amount.toFixed(2)} ({cluster.transaction_count} purchases)
+                  </div>
+                  <p style={{ fontSize: '0.76rem', color: '#94a3b8', marginTop: '2px' }}>{cluster.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#94a3b8', fontWeight: 700, marginBottom: '8px' }}>
+              ⚠️ Anomaly & Overspending Alerts ({data.overspending_alerts.length})
+            </h4>
+            {data.overspending_alerts.map((alert, idx) => (
+              <div key={idx} className={`alert-card ${alert.risk_level.toLowerCase()}`}>
+                <div className="alert-header">
+                  <span style={{ color: '#f8fafc' }}>{alert.merchant} ({alert.category})</span>
+                  <span style={{ color: alert.risk_level === 'HIGH' ? '#f43f5e' : '#f59e0b', fontSize: '0.75rem', fontWeight: 700 }}>
+                    {alert.spike_factor}x Spike
+                  </span>
+                </div>
+                <div className="alert-message">{alert.message}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function ChartsModal({ isOpen, onClose, apiUrl }) {
+      const [charts, setCharts] = useState(null);
+      const [loading, setLoading] = useState(true);
+
+      useEffect(() => {
+        if (isOpen) {
+          setLoading(true);
+          fetch(`${apiUrl}/charts`)
+            .then((res) => res.json())
+            .then((data) => {
+              setCharts(data);
+              setLoading(false);
+            })
+            .catch((err) => {
+              console.error(err);
+              setLoading(false);
+            });
+        }
+      }, [isOpen, apiUrl]);
+
+      if (!isOpen) return null;
+
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal-content custom-scroll" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#f8fafc' }}>📈 Visual Financial Analytics</h2>
+                <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>High-resolution charts generated directly via Matplotlib</p>
+              </div>
+              <button className="close-btn" onClick={onClose}>×</button>
+            </div>
+
+            {loading ? (
+              <div style={{ padding: '60px 0', textAlign: 'center', color: '#94a3b8' }}>
+                <span className="status-dot" style={{ display: 'inline-block', width: '12px', height: '12px', background: '#38bdf8' }}></span>
+                <p style={{ marginTop: '12px', fontSize: '0.9rem' }}>Rendering Matplotlib figures...</p>
+              </div>
+            ) : (
+              <div>
+                {charts?.category_chart && (
+                  <div style={{ marginBottom: '24px' }}>
+                    <h4 style={{ fontSize: '0.9rem', color: '#38bdf8', marginBottom: '8px', fontWeight: 600 }}>1. Spending Breakdown by Category</h4>
+                    <img src={charts.category_chart} alt="Category Spending" className="chart-img" />
+                  </div>
+                )}
+                {charts?.cluster_chart && (
+                  <div>
+                    <h4 style={{ fontSize: '0.9rem', color: '#a855f7', marginBottom: '8px', fontWeight: 600 }}>2. KMeans Spending Cluster Personas</h4>
+                    <img src={charts.cluster_chart} alt="KMeans Cluster Chart" className="chart-img" />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('chat');
+      const [isChartsOpen, setIsChartsOpen] = useState(false);
+      const [serverOnline, setServerOnline] = useState(false);
+
+      useEffect(() => {
+        const checkHealth = async () => {
+          try {
+            const res = await fetch(`${API_URL}/health`);
+            if (res.ok) setServerOnline(true);
+          } catch (e) {
+            setServerOnline(false);
+          }
+        };
+        checkHealth();
+        const interval = setInterval(checkHealth, 15000);
+        return () => clearInterval(interval);
+      }, []);
+
+      return (
+        <div className="app-container">
+          <nav className="navbar">
+            <div className="brand">
+              <div className="brand-icon">💎</div>
+              <div>
+                <h1 className="brand-title">AI-Powered Financial Insights Assistant</h1>
+                <p className="brand-subtitle">Machine Learning &bull; LangChain RAG &bull; FastAPI &bull; React</p>
+              </div>
+            </div>
+
+            <div className="nav-controls">
+              <div className="status-badge" style={{
+                background: serverOnline ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
+                borderColor: serverOnline ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)',
+                color: serverOnline ? '#34d399' : '#fb7185'
+              }}>
+                <span className="status-dot" style={{ backgroundColor: serverOnline ? '#10b981' : '#f43f5e' }}></span>
+                <span>{serverOnline ? 'Backend Online (Port 8000)' : 'Backend Disconnected'}</span>
+              </div>
+              <button className="send-btn" style={{ padding: '8px 16px', fontSize: '0.85rem' }} onClick={() => setIsChartsOpen(true)}>
+                📊 Matplotlib Charts
+              </button>
+            </div>
+          </nav>
+
+          <div className="main-grid split-view">
+            <ChatInterface apiUrl={API_URL} onOpenCharts={() => setIsChartsOpen(true)} />
+            <InsightsDashboard apiUrl={API_URL} onOpenCharts={() => setIsChartsOpen(true)} />
+          </div>
+
+          <ChartsModal isOpen={isChartsOpen} onClose={() => setIsChartsOpen(false)} apiUrl={API_URL} />
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

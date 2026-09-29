@@ -1,0 +1,17 @@
+# Investing Fundamentals and Wealth Accumulation
+
+## The Power of Compound Interest
+Compound interest is earning interest on both your initial principal and on accumulated interest from previous periods.
+Albert Einstein famously referred to compound interest as the eighth wonder of the world.
+Formula: A = P(1 + r/n)^(nt)
+Starting to invest in your early 20s can result in hundreds of thousands of dollars more at retirement compared to starting in your 30s, even with smaller monthly contributions.
+
+## Index Funds vs. Active Stock Picking
+- Index Funds / ETFs: Low-cost funds that track a broad market benchmark (such as the S&P 500 or Total Stock Market Index). They offer instant diversification across hundreds of companies with low expense ratios (< 0.10%).
+- Active Stock Picking: Trying to buy and sell individual stocks to beat the market. Studies show over 90% of professional fund managers fail to beat low-cost index funds over a 15-year period after accounting for fees and taxes.
+- Dollar-Cost Averaging (DCA): Investing a fixed dollar amount at regular intervals (e.g., $200 every month), regardless of whether stock prices are high or low. This removes emotional market timing.
+
+## Retirement Accounts
+1. 401(k) / Employer Match: Always contribute at least enough to capture your full employer match—it is literally a 100% immediate guaranteed return.
+2. Roth IRA: Funded with after-tax money, but all capital gains and withdrawals after age 59½ are 100% tax-free.
+3. Traditional IRA: Contributions are tax-deductible now, but withdrawals during retirement are taxed as ordinary income.

@@ -1,0 +1,17 @@
+# AI-Powered Financial Insights Assistant - Backend Dependencies
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.6.0
+python-dotenv>=1.0.0
+pandas>=2.2.0
+numpy>=1.26.0
+scikit-learn>=1.4.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+requests>=2.31.0
+
+# AI / LangChain (Optional LLM providers - works out of box with fallback, add key to unlock live LLM)
+langchain>=0.2.0
+langchain-community>=0.2.0
+langchain-core>=0.2.0
+langchain-groq>=0.1.0

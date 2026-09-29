@@ -1,0 +1,17 @@
+# Personal Budgeting and Financial Planning Guide
+
+## The 50/30/20 Rule
+The 50/30/20 budgeting framework is a proven personal finance rule designed to allocate monthly net income effectively:
+- 50% for Needs: Essential living expenses that you cannot live without. This includes rent or mortgage payments, groceries, utilities (electricity, water, gas), minimum debt payments, healthcare, and basic transportation.
+- 30% for Wants: Discretionary spending that enhances lifestyle but is not strictly necessary. Examples include dining out, coffee runs, entertainment subscriptions (Netflix, Spotify), shopping for non-essential clothing, vacations, and hobbies.
+- 20% for Savings and Financial Goals: Building your financial safety net. This includes emergency fund contributions, retirement accounts (401k, Roth IRA), extra debt payoff, and investments in index funds.
+
+## Zero-Based Budgeting
+In a zero-based budget, every single dollar earned is assigned a specific job before the month starts:
+Total Income - Total Expenses - Total Savings = $0.
+If you have leftover money at the end of the month, allocate it towards emergency savings or paying down high-interest debt rather than leaving it unassigned.
+
+## Recognizing and Preventing Overspending
+- Impulse Purchases: Waiting 48 to 72 hours before buying non-essential items above $50 drastically reduces impulse buying.
+- The 2x Category Benchmark: If discretionary categories like 'Dining Out' or 'Shopping' exceed twice their monthly average, it indicates financial leakage.
+- Pay Yourself First: Automatically transfer 20% of your paycheck to your savings or investment account on payday, preventing accidental overspending of saved funds.
